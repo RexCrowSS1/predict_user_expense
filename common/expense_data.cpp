@@ -43,11 +43,21 @@ vector<Record> readCsv(const string& filename) {
     vector<Record> data;
     string line;
     getline(file, line);
+    const vector<string> header = split(line);
+    const vector<string> expected = {
+        "Dataset_Type", "Week", "Month", "Day", "Food", "Drinks",
+        "Transportation", "Laundry"
+    };
+    if (header.size() < expected.size()
+        || !equal(expected.begin(), expected.end(), header.begin())
+        || find(header.begin(), header.end(), "Rent") != header.end())
+        throw runtime_error("Header CSV harus memakai kategori tanpa Rent.");
 
     while (getline(file, line)) {
         if (line.empty()) continue;
         vector<string> column = split(line);
-        if (column.size() < 9) throw runtime_error("Format CSV tidak valid.");
+        if (column.size() < 4 + CATEGORIES)
+            throw runtime_error("Format CSV tidak valid.");
 
         Record row;
         row.week = stoi(column[1]);
@@ -65,5 +75,22 @@ vector<Record> readCsv(const string& filename) {
     sort(data.begin(), data.end(), [](const Record& a, const Record& b) {
         return a.week == b.week ? a.day < b.day : a.week < b.week;
     });
+    // CSV records payments; the model uses an equal daily laundry allocation.
+    for (size_t start = 0; start < data.size();) {
+        size_t end = start;
+        double weeklyLaundry = 0;
+        while (end < data.size() && data[end].week == data[start].week) {
+            weeklyLaundry += data[end].expense[LAUNDRY];
+            end++;
+        }
+        if (end - start != DAYS)
+            throw runtime_error("Data CSV harus memuat tujuh hari per minggu.");
+        for (size_t day = 0; day < DAYS; day++) {
+            if (data[start + day].day != day)
+                throw runtime_error("Hari CSV duplikat atau tidak lengkap.");
+            data[start + day].expense[LAUNDRY] = weeklyLaundry / DAYS;
+        }
+        start = end;
+    }
     return data;
 }

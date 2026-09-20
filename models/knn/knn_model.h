@@ -26,7 +26,7 @@ class KnnModel final : public ForecastModel {
     Feature makeFeature(int week, std::size_t day, double lag) const;
 
 public:
-    explicit KnnModel(std::size_t k = 1);
+    explicit KnnModel(std::size_t k = 3);
     const char* name() const override;
     void train(const std::vector<Record>& data) override;
     double predict(int week, std::size_t day) const override;

@@ -7,7 +7,9 @@
 #include <vector>
 
 constexpr std::size_t DAYS = 7;
-constexpr std::size_t CATEGORIES = 5;
+constexpr std::size_t CATEGORIES = 4;
+constexpr std::size_t LAUNDRY = 3;
+constexpr std::size_t WEEKS = 4;
 constexpr std::size_t PHASES = 4;
 
 struct Record {
